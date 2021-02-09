@@ -122,7 +122,7 @@ val point_double_:
   Stack unit
     (requires fun h ->
       live h out /\ live h p /\ live h tmp /\
-      disjoint out p /\ disjoint tmp p /\ disjoint tmp out /\
+      (disjoint out p \/ out == p) /\ disjoint tmp p /\ disjoint tmp out /\
       F51.point_inv_t h p
     )
     (ensures fun h0 _ h1 -> modifies (loc out |+| loc tmp) h0 h1 /\
@@ -152,7 +152,8 @@ val point_double:
     out:point
   -> p:point ->
   Stack unit
-    (requires fun h -> live h out /\ live h p /\ disjoint out p /\
+    (requires fun h -> live h out /\ live h p /\
+    (disjoint out p \/ out == p) /\
       F51.point_inv_t h p
     )
     (ensures  fun h0 _ h1 -> modifies (loc out) h0 h1 /\

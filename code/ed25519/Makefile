@@ -16,9 +16,18 @@ dist/libed25519.a: dist/Makefile.basic
 	$(MAKE) -C dist -f Makefile.basic
 
 dist/Makefile.basic: $(filter-out %prims.krml,$(ALL_KRML_FILES))
-	$(KRML) $^ -o libed25519.a.a $(BASE_FLAGS) $(ED_BUNDLE) \
+	$(KRML) $^ -o libed25519.a \
+	-bundle Lib.PrintBuffer= \
+	$(BASE_FLAGS) $(BIGNUM_BUNDLE) $(ED_BUNDLE) \
 	-tmpdir dist \
+	-no-prefix 'Hacl.Test.Ed25519' \
 	-skip-compilation
+
+dist/ed25519-test.exe: dist/libed25519.a \
+	$(KREMLIN_HOME)/kremlib/dist/generic/libkremlib.a $(HACL_HOME)/lib/c/Lib_PrintBuffer.c
+
+%.exe:
+	$(CC) $(CFLAGS) $^ -o $@
 
 clean-c:
 	$(MAKE) -C dist/ -f Makefile.basic clean

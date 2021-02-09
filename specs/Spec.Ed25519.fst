@@ -8,6 +8,8 @@ open Lib.RawIntTypes
 
 open Spec.Curve25519
 
+module E = Lib.Exponentiation
+
 #reset-options "--max_fuel 0 --z3rlimit 100"
 
 ///
@@ -88,18 +90,25 @@ let ith_bit (k:lbytes 32) (i:size_nat{i < 256}) =
 let cswap2 (sw:uint8) (x:ext_point) (xp1:ext_point) =
   if uint_to_nat sw = 1 then (xp1, x) else (x, xp1)
 
-let ladder_step (k:lbytes 32) (i:nat{i < 256}) (x, xp1) =
-  let bit = ith_bit k (255 - i) in
-  let x, xp1 = cswap2 bit x xp1 in
-  let xx = point_double x in
-  let xxp1 = point_add x xp1 in
-  cswap2 bit xx xxp1
+let one_ed : ext_point = (zero, one, one, zero)
 
-let montgomery_ladder (x:ext_point) (xp1:ext_point) (k:lbytes 32) : Tot (ext_point & ext_point) =
-  Lib.LoopCombinators.repeati 256 (ladder_step k) (x, xp1)
+assume val lemma_one: a:ext_point -> Lemma (point_add a one_ed == a)
+assume val lemma_fmul_assoc: a:ext_point -> b:ext_point -> c:ext_point -> Lemma (point_add (point_add a b) c == point_add a (point_add b c))
+assume val lemma_fmul_comm: a:ext_point -> b:ext_point -> Lemma (point_add a b == point_add b a)
+assume val lemma_fsqr: a:ext_point -> Lemma (point_add a a == point_double a)
+
+let mk_ed25519_group: E.exp ext_point = {
+  E.one = one_ed;
+  E.fmul = point_add;
+  E.lemma_one = lemma_one;
+  E.lemma_fmul_assoc = lemma_fmul_assoc;
+  E.lemma_fmul_comm =lemma_fmul_comm;
+  }
 
 let point_mul (a:lbytes 32) (p:ext_point) =
-  fst (montgomery_ladder (zero, one, one, zero) p a)
+  //E.pow mk_ed25519_group p (nat_from_bytes_le a)
+  //E.exp_mont_ladder_swap2 mk_ed25519_group p 256 (nat_from_bytes_le a)
+  E.exp_fw mk_ed25519_group p 256 (nat_from_bytes_le a) 4
 
 let recover_x (y:nat) (sign:bool) : Tot (option elem) =
   if y >= prime then None

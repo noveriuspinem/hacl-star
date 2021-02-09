@@ -13,7 +13,7 @@ module F56 = Hacl.Impl.Ed25519.Field56
 
 module SC = Spec.Curve25519
 
-#set-options "--z3rlimit 20 --max_fuel 0 --max_ifuel 0"
+#set-options "--z3rlimit 50 --max_fuel 0 --max_ifuel 0"
 
 inline_for_extraction noextract
 val point_add_step_1:
@@ -98,8 +98,6 @@ val point_add_step_2:
        F51.fevalh h1 (gsub tmp 15ul 5ul) == h)
     )
 
-#push-options "--z3rlimit 50"
-
 let point_add_step_2 p q tmp =
   let tmp1 = sub tmp 0ul 5ul in
   let tmp2 = sub tmp 5ul 5ul in
@@ -122,7 +120,6 @@ let point_add_step_2 p q tmp =
   fsum tmp5 tmp2;                // tmp5 = g
   fsum tmp4 tmp3                // tmp4 = h
 
-#pop-options
 
 inline_for_extraction noextract
 val point_add_:
@@ -134,7 +131,8 @@ val point_add_:
     (requires fun h ->
       live h out /\ live h p /\ live h q /\ live h tmp /\
       disjoint tmp p /\ disjoint tmp q /\ disjoint tmp out /\
-      disjoint p out /\ disjoint q out /\
+      (disjoint p out \/ p == out) /\
+      (disjoint q out \/ q == out) /\
       F51.point_inv_t h p /\
       F51.point_inv_t h q
     )
@@ -167,7 +165,8 @@ val point_add:
   Stack unit
     (requires fun h ->
       live h out /\ live h p /\ live h q /\
-      disjoint p out /\ disjoint q out /\
+      (disjoint p out \/ p == out) /\
+      (disjoint q out \/ q == out) /\
       F51.point_inv_t h p /\
       F51.point_inv_t h q
       )
