@@ -160,7 +160,7 @@ let point_mul result scalar q =
   SN.bn_from_bytes_le_lemma #U64 32 (as_seq h0 scalar);
 
   make_point_inf result;
-  BE.lexp_fw_raw 20ul 0ul mk_lexp (null uint64) a 4ul 256ul bscalar result 4ul;
+  BE.lexp_fw_ct 20ul 0ul mk_lexp (null uint64) a 4ul 256ul bscalar result 4ul;
   pop_frame()
 
 

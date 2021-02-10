@@ -193,6 +193,7 @@ EXPORTS
   Hacl_Salsa20_salsa20_key_block0
   Hacl_Salsa20_hsalsa20
   Hacl_Bignum_Convert_bn_from_bytes_be_uint64
+  Hacl_Bignum_Convert_bn_from_bytes_le_uint64
   Hacl_Bignum_Convert_bn_to_bytes_be_uint64
   Hacl_Bignum_Base_mul_wide_add_u64
   Hacl_Bignum_Base_mul_wide_add2_u64
