@@ -296,25 +296,7 @@ if detect_arm; then
   fi
 fi
 
-if detect_x86; then
-  echo "... detected x86 platform"
-  echo "... $build_target does not support 256-bit arithmetic"
-  echo "BLACKLIST += $(ls *CP256*.c *_256.c *_Vec256.c | xargs)" >> Makefile.config
-  echo "... $build_target does not support legacy vale stubs"
-  echo "BLACKLIST += evercrypt_vale_stubs.c" >> Makefile.config
-  echo "#define Lib_IntVector_Intrinsics_vec256 void *" >> config.h
-  echo "$CC $CROSS_CFLAGS cannot compile 128-bit vector arithmetic, disabling"
-  echo "BLACKLIST += $(ls *CP128*.c *_128.c *_Vec128.c | xargs)" >> Makefile.config
-  echo "#define Lib_IntVector_Intrinsics_vec128 void *" >> config.h
-fi
-
-if ! detect_x64; then
-  echo "$build_target does not support x64 assembly, disabling Curve64"
-  echo "BLACKLIST += Hacl_Curve25519_64.c $(ls Hacl_HPKE_Curve64_*.c | xargs)" >> Makefile.config
-  echo "$build_target does not support _addcarry_u64, using a C implementation"
-  echo "#define BROKEN_INTRINSICS 1" >> config.h
-  echo "#define IS_NOT_X64 1" >> config.h
-else
+if detect_x64; then
   if detect_broken_xcode; then
     echo "found broken XCode version, known to refuse to compile our inline ASM, disabling "
     echo "#define BROKEN_INLINE_ASM 1" >> config.h
@@ -327,6 +309,27 @@ else
   else
     echo "... using a non-buggy GCC"
   fi
+fi
+
+if ! detect_x64 && ! detect_arm; then
+  echo "... $build_target does not support 256-bit arithmetic"
+  echo "BLACKLIST += $(ls *CP256*.c *_256.c *_Vec256.c | xargs)" >> Makefile.config
+  echo "#define Lib_IntVector_Intrinsics_vec256 void *" >> config.h
+  echo "... $build_target does not support legacy vale stubs"
+  echo "BLACKLIST += evercrypt_vale_stubs.c" >> Makefile.config
+
+  echo "$CC $CROSS_CFLAGS cannot compile 128-bit vector arithmetic, disabling"
+  echo "BLACKLIST += $(ls *CP128*.c *_128.c *_Vec128.c | xargs)" >> Makefile.config
+  echo "#define Lib_IntVector_Intrinsics_vec128 void *" >> config.h
+fi
+
+if ! detect_x64; then
+  echo "$build_target does not support x64 assembly, disabling Curve64"
+  echo "BLACKLIST += Hacl_Curve25519_64.c $(ls Hacl_HPKE_Curve64_*.c | xargs)" >> Makefile.config
+
+  echo "$build_target does not support _addcarry_u64, using a C implementation"
+  echo "#define BROKEN_INTRINSICS 1" >> config.h
+  echo "#define IS_NOT_X64 1" >> config.h
 fi
 
 if ! detect_uint128; then
