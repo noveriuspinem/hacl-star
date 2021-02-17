@@ -297,6 +297,8 @@ if detect_arm; then
 fi
 
 if detect_x64; then
+  echo "CFLAGS_128 = -mavx" >> Makefile.config
+  echo "CFLAGS_256 = -mavx -mavx2" >> Makefile.config
   if detect_broken_xcode; then
     echo "found broken XCode version, known to refuse to compile our inline ASM, disabling "
     echo "#define BROKEN_INLINE_ASM 1" >> config.h
